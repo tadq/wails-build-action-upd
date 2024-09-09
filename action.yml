@@ -187,6 +187,7 @@ runs:
         # echo "Maintainer: your_name <your_email@example.com>" >> ~/deb-pkg/DEBIAN/control
         # echo "Description: A short description of your package." >> ~/deb-pkg/DEBIAN/control
         dpkg-deb --build ~/deb-pkg .
+      shell: bash
                   
     # Package and Sign MacOS
     - name: Import Code-Signing Certificates for macOS
