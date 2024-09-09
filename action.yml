@@ -170,7 +170,24 @@ runs:
       working-directory: ${{ inputs.app-working-directory }}
       run: chmod +x build/bin/*
       shell: bash
-      
+
+    # Package Linux App
+    # Create the Debian package
+    - name: Create Debian package
+      run: |
+        tag_version=${{ github.ref }}        
+        version=${tag_version#*v}  # Extract version after 'v' prefix
+        mkdir -p ~/deb-pkg/{DEBIAN,usr/bin}
+        cp build/bin/{{ inputs.build-name }} ~/deb-pkg/usr/bin/
+        echo "Package: "{{ inputs.build-name }} > ~/deb-pkg/DEBIAN/control
+        echo "Version: $version" >> ~/deb-pkg/DEBIAN/control
+        echo "Section: custom" >> ~/deb-pkg/DEBIAN/control
+        echo "Priority: optional" >> ~/deb-pkg/DEBIAN/control
+        echo "Architecture: amd64" >> ~/deb-pkg/DEBIAN/control
+        # echo "Maintainer: your_name <your_email@example.com>" >> ~/deb-pkg/DEBIAN/control
+        # echo "Description: A short description of your package." >> ~/deb-pkg/DEBIAN/control
+        dpkg-deb --build ~/deb-pkg .
+                  
     # Package and Sign MacOS
     - name: Import Code-Signing Certificates for macOS
       if: runner.os == 'macOS' && inputs.sign != 'false' && startsWith(github.ref, 'refs/tags/')
@@ -207,13 +224,13 @@ runs:
       shell: bash
       working-directory: ${{ inputs.app-working-directory }}
       run: |
-        productbuild --sign '${{inputs.sign-macos-installer-id}}' --component ${{ inputs.app-working-directory }}/build/bin/${{inputs.build-name}}.app /Applications/ ${{ inputs.app-working-directory }}/build/bin/${{inputs.build-name}}.pkg
+        productbuild --sign '${{inputs.sign-macos-installer-id}}' --component ${{ inputs.app-working-directory }}/build/bin/${{inputs.build-name}}.app /Applications ${{ inputs.app-working-directory }}/build/bin/${{inputs.build-name}}.pkg
     - name: Building Installer
       if: runner.os == 'macOS' && inputs.sign-macos-installer-id == '' && startsWith(github.ref, 'refs/tags/')
       shell: bash
       working-directory: ${{ inputs.app-working-directory }}
       run: |
-        productbuild --component ${{ inputs.app-working-directory }}/build/bin/${{inputs.build-name}}.app /Applications/ ${{ inputs.app-working-directory }}/build/bin/${{inputs.build-name}}.pkg
+        productbuild --component ${{ inputs.app-working-directory }}/build/bin/${{inputs.build-name}}.app /Applications ${{ inputs.app-working-directory }}/build/bin/${{inputs.build-name}}.pkg
     - name: Notarising Installer and zip
       if: runner.os == 'macOS' && inputs.sign != 'false' && startsWith(github.ref, 'refs/tags/')
       shell: bash
@@ -222,6 +239,14 @@ runs:
         APPLE_PASSWORD: ${{ inputs.sign-macos-apple-password }}
       run: |
         gon -log-level=info ${{ inputs.app-working-directory }}/build/darwin/gon-notarize.json      
+
+    # Create DMG file for MacOS
+    - name: Building DMG
+      if: runner.os == 'macOS' && startsWith(github.ref, 'refs/tags/')
+      shell: bash
+      working-directory: ${{ inputs.app-working-directory }}
+      run: |
+        hdiutil create -volname ${{inputs.build-name}} -srcfolder ${{ inputs.app-working-directory }}/build/bin/${{inputs.build-name}}.app -ov -format UDZO ${{ inputs.app-working-directory }}/build/bin/${{inputs.build-name}}.dmg
         
     # Windows signing
     - name: Sign Windows binaries
