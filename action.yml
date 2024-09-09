@@ -188,7 +188,7 @@ runs:
         echo "Architecture: amd64" >> ~/deb-pkg/DEBIAN/control
         # echo "Maintainer: your_name <your_email@example.com>" >> ~/deb-pkg/DEBIAN/control
         # echo "Description: A short description of your package." >> ~/deb-pkg/DEBIAN/control
-        dpkg-deb --build ~/deb-pkg . --rootdir=build/bin        
+        dpkg-deb --build ~/deb-pkg . -o build/bin/${{ inputs.build-name }}.deb
       shell: bash
                   
     # Package and Sign MacOS
