@@ -123,6 +123,7 @@ runs:
       shell: bash
       working-directory: ${{inputs.deno-working-directory}}
       run: ${{inputs.deno-build}}
+      
     # install wails
     - name: Install Wails
       if: inputs.build == 'true'
@@ -130,12 +131,14 @@ runs:
       shell: bash
     - name: Install Linux Wails deps
       if: inputs.build == 'true' && runner.os == 'Linux'
-      run: sudo apt-get update && sudo apt-get install libgtk-3-0 libwebkit2gtk-4.0-dev gcc-aarch64-linux-gnu
+      #run: sudo apt-get update && sudo apt-get install libgtk-3-0 libwebkit2gtk-4.0-dev gcc-aarch64-linux-gnu
+      run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev
       shell: bash
     - name: Install macOS Wails deps
       if: runner.os == 'macOS'
       run: brew install mitchellh/gon/gon
       shell: bash
+       
     # Building step
     - name: Build App
       if: inputs.build == 'true' && runner.os == 'macOS'
@@ -167,6 +170,7 @@ runs:
       working-directory: ${{ inputs.app-working-directory }}
       run: chmod +x build/bin/*
       shell: bash
+      
     # Package and Sign MacOS
     - name: Import Code-Signing Certificates for macOS
       if: runner.os == 'macOS' && inputs.sign != 'false' && startsWith(github.ref, 'refs/tags/')
@@ -209,7 +213,7 @@ runs:
       shell: bash
       working-directory: ${{ inputs.app-working-directory }}
       run: |
-        productbuild --component ${{ inputs.app-working-directory }}/build/bin/${{inputs.build-name}}.app ${{ inputs.app-working-directory }}/build/bin/${{inputs.build-name}}.pkg
+        productbuild --component ${{ inputs.app-working-directory }}/build/bin/${{inputs.build-name}}.app /Applications ${{ inputs.app-working-directory }}/build/bin/${{inputs.build-name}}.pkg
     - name: Notarising Installer and zip
       if: runner.os == 'macOS' && inputs.sign != 'false' && startsWith(github.ref, 'refs/tags/')
       shell: bash
@@ -218,6 +222,7 @@ runs:
         APPLE_PASSWORD: ${{ inputs.sign-macos-apple-password }}
       run: |
         gon -log-level=info ${{ inputs.app-working-directory }}/build/darwin/gon-notarize.json      
+        
     # Windows signing
     - name: Sign Windows binaries
       shell: powershell
