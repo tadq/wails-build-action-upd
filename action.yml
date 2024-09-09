@@ -178,8 +178,8 @@ runs:
         tag_version=${{ github.ref }}        
         version=${tag_version#*v}  # Extract version after 'v' prefix
         mkdir -p ~/deb-pkg/{DEBIAN,usr/bin}
-        cp build/bin/{{ inputs.build-name }} ~/deb-pkg/usr/bin/
-        echo "Package: "{{ inputs.build-name }} > ~/deb-pkg/DEBIAN/control
+        cp build/bin/${{ inputs.build-name }} ~/deb-pkg/usr/bin/
+        echo "Package: "${{ inputs.build-name }} > ~/deb-pkg/DEBIAN/control
         echo "Version: $version" >> ~/deb-pkg/DEBIAN/control
         echo "Section: custom" >> ~/deb-pkg/DEBIAN/control
         echo "Priority: optional" >> ~/deb-pkg/DEBIAN/control
