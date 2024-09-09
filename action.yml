@@ -188,7 +188,7 @@ runs:
         echo "Architecture: amd64" >> ~/deb-pkg/DEBIAN/control
         # echo "Maintainer: your_name <your_email@example.com>" >> ~/deb-pkg/DEBIAN/control
         # echo "Description: A short description of your package." >> ~/deb-pkg/DEBIAN/control
-        dpkg-deb --build ~/deb-pkg .
+        dpkg-deb --build ~/deb-pkg . --rootdir=build/bin        
       shell: bash
                   
     # Package and Sign MacOS
@@ -228,12 +228,13 @@ runs:
       working-directory: ${{ inputs.app-working-directory }}
       run: |
         productbuild --sign '${{inputs.sign-macos-installer-id}}' --component ${{ inputs.app-working-directory }}/build/bin/${{inputs.build-name}}.app /Applications ${{ inputs.app-working-directory }}/build/bin/${{inputs.build-name}}.pkg
-    - name: Building Installer
-      if: runner.os == 'macOS' && inputs.sign-macos-installer-id == '' && startsWith(github.ref, 'refs/tags/')
-      shell: bash
-      working-directory: ${{ inputs.app-working-directory }}
-      run: |
-        productbuild --component ${{ inputs.app-working-directory }}/build/bin/${{inputs.build-name}}.app /Applications ${{ inputs.app-working-directory }}/build/bin/${{inputs.build-name}}.pkg
+    # TODO: make this work. Produced pkg starts installation process on the Mac but does not produce icon in /Applications folder.
+    # - name: Building Installer
+    #   if: runner.os == 'macOS' && inputs.sign-macos-installer-id == '' && startsWith(github.ref, 'refs/tags/')
+    #   shell: bash
+    #   working-directory: ${{ inputs.app-working-directory }}
+    #   run: |
+    #     productbuild --component ${{ inputs.app-working-directory }}/build/bin/${{inputs.build-name}}.app /Applications ${{ inputs.app-working-directory }}/build/bin/${{inputs.build-name}}.pkg
     - name: Notarising Installer and zip
       if: runner.os == 'macOS' && inputs.sign != 'false' && startsWith(github.ref, 'refs/tags/')
       shell: bash
